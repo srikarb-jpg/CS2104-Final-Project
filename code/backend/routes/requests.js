@@ -1,26 +1,12 @@
-// requests.js - Routes for study partner requests
-//
-// Routes in this file:
-//   POST /api/users/:id/requests          - Send a study request to another student
-//   GET  /api/users/:id/requests          - Get all incoming requests for a user
-//   GET  /api/users/:id/requests/sent     - Get all requests this user has sent
-//   PUT  /api/users/:id/requests/:reqId   - Accept or decline an incoming request
-
 const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middleware/auth');
 const { readDB, writeDB } = require('../database/db');
 
-// =====================================================
-// POST /api/users/:id/requests
-// Send a study request to another student
-// :id here is the SENDER's ID
-// The target student's ID is in req.body.to_user_id
-// =====================================================
+// POST /api/users/:id/requests  — send a study request
 router.post('/:id/requests', verifyToken, (req, res) => {
   const fromUserId = parseInt(req.params.id);
 
-  // Security: you can only send requests as yourself
   if (req.user.id !== fromUserId) {
     return res.status(403).json({ error: 'You can only send requests as yourself.' });
   }
@@ -33,38 +19,32 @@ router.post('/:id/requests', verifyToken, (req, res) => {
 
   const toUserId = parseInt(to_user_id);
 
-  // Can't send a request to yourself
   if (fromUserId === toUserId) {
-    return res.status(400).json({ error: "You can't send a study request to yourself." });
+    return res.status(400).json({ error: "You can't send a request to yourself." });
   }
 
   const data = readDB();
 
-  // Check that the target user actually exists
   const targetUser = data.users.find(u => u.id === toUserId);
   if (!targetUser) {
-    return res.status(404).json({ error: 'That student was not found.' });
+    return res.status(404).json({ error: 'Student not found.' });
   }
 
-  // Check if a pending request already exists between these two users
-  // We don't want duplicate requests
+  // don't allow duplicate pending requests
   const existingRequest = data.study_requests.find(r =>
-    r.from_user_id === fromUserId &&
-    r.to_user_id === toUserId &&
-    r.status === 'pending'
+    r.from_user_id === fromUserId && r.to_user_id === toUserId && r.status === 'pending'
   );
 
   if (existingRequest) {
     return res.status(400).json({ error: 'You already sent a request to this student.' });
   }
 
-  // Create the new request object
   const newRequest = {
     id: data.nextIds.study_requests,
     from_user_id: fromUserId,
     to_user_id: toUserId,
-    message: message || '',         // Optional message from the sender
-    status: 'pending',              // pending → accepted or declined
+    message: message || '',
+    status: 'pending',
     created_at: new Date().toISOString()
   };
 
@@ -72,14 +52,11 @@ router.post('/:id/requests', verifyToken, (req, res) => {
   data.nextIds.study_requests += 1;
   writeDB(data);
 
-  console.log(`Study request sent from user ${fromUserId} to user ${toUserId}`);
-  res.status(201).json({ message: `Study request sent to ${targetUser.name}!`, request: newRequest });
+  console.log(`Study request from ${fromUserId} to ${toUserId}`);
+  res.status(201).json({ message: `Request sent to ${targetUser.name}!`, request: newRequest });
 });
 
-// =====================================================
-// GET /api/users/:id/requests
-// Get all INCOMING study requests for a user (requests sent TO them)
-// =====================================================
+// GET /api/users/:id/requests  — incoming requests
 router.get('/:id/requests', verifyToken, (req, res) => {
   const userId = parseInt(req.params.id);
 
@@ -88,11 +65,8 @@ router.get('/:id/requests', verifyToken, (req, res) => {
   }
 
   const data = readDB();
-
-  // Find all requests where this user is the recipient
   const incoming = data.study_requests.filter(r => r.to_user_id === userId);
 
-  // Add the sender's name and info to each request so the frontend can display it
   const incomingWithDetails = incoming.map(r => {
     const sender = data.users.find(u => u.id === r.from_user_id);
     return {
@@ -103,16 +77,11 @@ router.get('/:id/requests', verifyToken, (req, res) => {
     };
   });
 
-  // Sort so newest requests appear first
   incomingWithDetails.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
   res.json(incomingWithDetails);
 });
 
-// =====================================================
-// GET /api/users/:id/requests/sent
-// Get all requests this user has SENT (so they can see status)
-// =====================================================
+// GET /api/users/:id/requests/sent  — requests this user sent
 router.get('/:id/requests/sent', verifyToken, (req, res) => {
   const userId = parseInt(req.params.id);
 
@@ -121,10 +90,8 @@ router.get('/:id/requests/sent', verifyToken, (req, res) => {
   }
 
   const data = readDB();
-
   const sent = data.study_requests.filter(r => r.from_user_id === userId);
 
-  // Add the recipient's name to each request
   const sentWithDetails = sent.map(r => {
     const recipient = data.users.find(u => u.id === r.to_user_id);
     return {
@@ -136,15 +103,10 @@ router.get('/:id/requests/sent', verifyToken, (req, res) => {
   });
 
   sentWithDetails.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
   res.json(sentWithDetails);
 });
 
-// =====================================================
-// PUT /api/users/:id/requests/:reqId
-// Accept or decline an incoming request
-// Send { action: "accept" } or { action: "decline" } in the body
-// =====================================================
+// PUT /api/users/:id/requests/:reqId  — accept or decline
 router.put('/:id/requests/:reqId', verifyToken, (req, res) => {
   const userId = parseInt(req.params.id);
   const reqId = parseInt(req.params.reqId);
@@ -160,11 +122,7 @@ router.put('/:id/requests/:reqId', verifyToken, (req, res) => {
   }
 
   const data = readDB();
-
-  // Find the request - it must be addressed TO this user
-  const requestIndex = data.study_requests.findIndex(
-    r => r.id === reqId && r.to_user_id === userId
-  );
+  const requestIndex = data.study_requests.findIndex(r => r.id === reqId && r.to_user_id === userId);
 
   if (requestIndex === -1) {
     return res.status(404).json({ error: 'Request not found.' });
@@ -174,10 +132,8 @@ router.put('/:id/requests/:reqId', verifyToken, (req, res) => {
     return res.status(400).json({ error: 'This request has already been responded to.' });
   }
 
-  // Update the status based on the action
   data.study_requests[requestIndex].status = action === 'accept' ? 'accepted' : 'declined';
   data.study_requests[requestIndex].responded_at = new Date().toISOString();
-
   writeDB(data);
 
   const statusWord = action === 'accept' ? 'accepted' : 'declined';

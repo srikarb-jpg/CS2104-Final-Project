@@ -1,29 +1,12 @@
-// Dashboard.js - The home page after logging in
-//
-// This is the main hub of the app. It shows:
-//   - A welcome message with the user's name
-//   - Navigation cards to each section of the app
-//   - A logout button
-//
-// The user info comes from localStorage where we saved it during login.
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api';
 
 function Dashboard() {
-  // Get the stored user object from localStorage
-  // We stored it as a JSON string, so we need JSON.parse() to convert it back to an object
-  // This is like deserializing an object in Java
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-  // navigate() lets us redirect to another page programmatically
   const navigate = useNavigate();
-
-  // Track how many pending incoming requests the user has for the badge
   const [pendingCount, setPendingCount] = useState(0);
 
-  // Load the pending request count when the dashboard opens
   useEffect(() => {
     async function loadPendingCount() {
       try {
@@ -31,28 +14,20 @@ function Dashboard() {
         const pending = res.data.filter(r => r.status === 'pending').length;
         setPendingCount(pending);
       } catch (err) {
-        // Not critical — just don't show a badge if it fails
         console.log('Could not load pending requests:', err);
       }
     }
     if (user.id) loadPendingCount();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // This function logs the user out
   function handleLogout() {
-    // Remove the saved login data from the browser
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-
-    console.log('User logged out');
-
-    // Redirect to the login page
     navigate('/login');
   }
 
   return (
     <div>
-      {/* Navigation header bar */}
       <div className="header">
         <h1>HokieStudy</h1>
         <div className="header-nav">
@@ -62,28 +37,18 @@ function Dashboard() {
           <Link to="/requests">My Requests</Link>
           <Link to="/calendar">Calendar</Link>
           <Link to="/profile">Profile</Link>
-          {/* This button uses onClick to run our logout function */}
-          <button
-            className="btn btn-orange btn-small"
-            onClick={handleLogout}
-          >
+          <button className="btn btn-orange btn-small" onClick={handleLogout}>
             Logout
           </button>
         </div>
       </div>
 
-      {/* Welcome section */}
       <div className="dashboard-welcome">
         <h2>Welcome back, {user.name || 'Hokie'}!</h2>
-        <p>
-          {user.year ? `${user.year} at Virginia Tech` : 'Virginia Tech Student'}
-        </p>
+        <p>{user.year ? `${user.year} at Virginia Tech` : 'Virginia Tech Student'}</p>
       </div>
 
-      {/* Grid of cards linking to each section */}
-      {/* Each card is an <a> tag styled to look like a card */}
       <div className="dashboard-grid">
-
         <Link to="/courses" className="dashboard-card">
           <h3>My Courses</h3>
           <p>Add the classes you're taking this semester to get matched with classmates</p>
@@ -102,7 +67,6 @@ function Dashboard() {
         <Link to="/requests" className="dashboard-card">
           <h3>
             My Requests
-            {/* Show a red badge if there are pending incoming requests */}
             {pendingCount > 0 && (
               <span style={{
                 marginLeft: '10px',
@@ -125,7 +89,6 @@ function Dashboard() {
           <h3>My Calendar</h3>
           <p>View your study schedule and export it to Google Calendar</p>
         </Link>
-
       </div>
     </div>
   );
