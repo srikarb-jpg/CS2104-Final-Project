@@ -1,0 +1,29 @@
+{
+  "name": "cs2104-final-project",
+  "version": "1.0.0",
+  "description": "A web application that helps Virginia Tech students find study partners by matching them based on shared courses and overlapping weekly availability.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "concurrently \"npm --prefix code/backend start\" \"npm --prefix code/frontend start\"",
+    "test": "npm --prefix code/backend test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srikarb-jpg/CS2104-Final-Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/srikarb-jpg/CS2104-Final-Project/issues"
+  },
+  "homepage": "https://github.com/srikarb-jpg/CS2104-Final-Project#readme",
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
