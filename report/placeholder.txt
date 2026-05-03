@@ -1,7 +1,0 @@
-HokieStudy - Personal Programming Project Report
-
-This report will be submitted separately as required by HW14.
-
-Project Title: HokieStudy - Virginia Tech Study Partner Finder
-Author: srikarb@vt.edu
-Course: CS 2104

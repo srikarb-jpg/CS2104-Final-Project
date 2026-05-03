@@ -5,7 +5,8 @@
       "Bash(node -e \"require\\('dotenv'\\).config\\(\\); const app = require\\('./server'\\); setTimeout\\(\\(\\) => { process.exit\\(0\\); }, 1000\\);\")",
       "Bash(npm init *)",
       "Bash(node database/seed.js)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(python -c \"import app; app.init_db\\(\\); print\\('DB init OK'\\); c = app.db\\(\\); count = c.execute\\('SELECT COUNT\\(*\\) FROM courses'\\).fetchone\\(\\)[0]; print\\(f'Courses loaded: {count}'\\); c.close\\(\\)\")"
     ]
   }
 }
