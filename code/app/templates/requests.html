@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Study Requests</h2>
+
+<div class="card">
+  <h3>Incoming Requests {% if incoming|selectattr('status','equalto','pending')|list|length > 0 %}<span class="badge">{{ incoming|selectattr('status','equalto','pending')|list|length }}</span>{% endif %}</h3>
+  {% if incoming %}
+    {% for r in incoming %}
+    <div class="request-row">
+      <div>
+        <strong>{{ r.name }}</strong>
+        <span class="gray" style="margin-left:8px">{{ r.year or 'VT Student' }}</span>
+      </div>
+      <div class="row">
+        {% if r.status == 'pending' %}
+          <form method="POST" action="/requests/{{ r.id }}/accepted"><button class="sm">Accept</button></form>
+          <form method="POST" action="/requests/{{ r.id }}/declined"><button class="sm danger">Decline</button></form>
+        {% else %}
+          <span class="status-badge {{ r.status }}">{{ r.status.capitalize() }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="gray">No one has requested to study with you yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Requests I Sent</h3>
+  {% if sent %}
+    {% for r in sent %}
+    <div class="request-row">
+      <div>
+        <strong>{{ r.name }}</strong>
+        <span class="gray" style="margin-left:8px">{{ r.year or 'VT Student' }}</span>
+      </div>
+      <span class="status-badge {{ r.status }}">{{ r.status.capitalize() }}</span>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="gray">You haven't sent any requests yet. <a href="/matches">Find study partners</a></p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Study Partner Matches</h2>
+{% if no_courses %}
+<div class="card"><p class="gray">Add your courses first! <a href="/courses">Go to My Courses</a></p></div>
+{% elif not matches %}
+<div class="card"><p class="gray">No matches yet. Other students need to add the same courses.</p></div>
+{% else %}
+{% for m in matches %}
+<div class="card match">
+  <div class="row"><h3>{{ m.name }}</h3><span class="tag">{{ m.year }}</span></div>
+  <p style="margin-top:6px"><b>Shared courses:</b> {{ m.courses|join(', ') }}</p>
+
+  <!-- course match percentage bar -->
+  <div style="margin-top:12px">
+    <div class="bar-label"><span>Course Match</span><span>{{ m.course_pct }}%</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:{{ m.course_pct }}%; background:{{ '#2a7d4f' if m.course_pct >= 75 else '#E5751F' if m.course_pct >= 50 else '#861F41' }};"></div></div>
+  </div>
+
+  <!-- availability match percentage bar -->
+  <div style="margin-top:8px">
+    <div class="bar-label"><span>Availability Match</span><span>{{ m.avail_pct }}%</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:{{ m.avail_pct }}%; background:{{ '#2a7d4f' if m.avail_pct >= 75 else '#E5751F' if m.avail_pct >= 50 else '#861F41' if m.avail_pct > 0 else '#ccc' }};"></div></div>
+    {% if m.overlap_count > 0 %}<p class="green" style="font-size:13px;margin-top:3px">✓ {{ m.overlap_count }} overlapping time slot{{ 's' if m.overlap_count != 1 }}</p>{% endif %}
+  </div>
+
+  <!-- request button -->
+  <div style="margin-top:12px">
+    {% if m.request_status == 'pending' %}
+      <span class="status-badge pending">Request Sent</span>
+    {% elif m.request_status == 'accepted' %}
+      <span class="status-badge accepted">✓ Accepted</span>
+    {% elif m.request_status == 'declined' %}
+      <span class="status-badge declined">Declined</span>
+    {% else %}
+      <form method="POST" action="/request/{{ m.uid }}" style="display:inline">
+        <button class="btn-orange">Request to Study</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

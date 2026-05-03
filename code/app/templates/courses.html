@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Courses</h2>
+
+<datalist id="faculty-list"></datalist>
+
+<div class="card">
+  <form method="GET" class="row">
+    <input name="q" value="{{ search }}" placeholder="Search courses (e.g. CS 2104)">
+    <button>Search</button>
+  </form>
+  {% if results %}
+    {% for c in results %}
+    <form method="POST" class="result-row" style="flex-wrap:wrap;gap:6px;padding:10px 0">
+      <input type="hidden" name="action" value="add">
+      <input type="hidden" name="course_id" value="{{ c.id }}">
+      <span style="flex:1;min-width:200px"><b>{{ c.course_code }}</b> — {{ c.course_name }}</span>
+      <input name="professor" placeholder="Professor (optional)"
+             list="faculty-list"
+             class="prof-input"
+             autocomplete="off"
+             style="width:220px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+      <button class="sm">+ Add</button>
+    </form>
+    {% endfor %}
+  {% elif search %}<p class="gray" style="margin-top:10px">No results for "{{ search }}"</p>{% endif %}
+</div>
+<div class="card">
+  <h3>Added Courses</h3>
+  {% if my_courses %}
+    {% for uc in my_courses %}
+    <div class="result-row">
+      <div>
+        <span><b>{{ uc.course_code }}</b> — {{ uc.course_name }}</span>
+        {% if uc.professor %}<span class="gray" style="margin-left:8px">Prof. {{ uc.professor }}</span>{% endif %}
+      </div>
+      <form method="POST">
+        <input type="hidden" name="action" value="remove">
+        <input type="hidden" name="entry_id" value="{{ uc.id }}">
+        <button class="sm danger">Remove</button>
+      </form>
+    </div>
+    {% endfor %}
+  {% else %}<p class="gray">No courses added yet. Search above!</p>{% endif %}
+</div>
+
+<script>
+  // when the user types in a professor field, fetch matching names and update the datalist
+  document.querySelectorAll('.prof-input').forEach(function(input) {
+    input.addEventListener('input', function() {
+      var q = this.value;
+      if (q.length < 2) return;
+      fetch('/faculty/search?q=' + encodeURIComponent(q))
+        .then(function(r) { return r.json(); })
+        .then(function(names) {
+          var list = document.getElementById('faculty-list');
+          list.innerHTML = '';
+          names.forEach(function(name) {
+            var opt = document.createElement('option');
+            opt.value = name;
+            list.appendChild(opt);
+          });
+        });
+    });
+  });
+</script>
+{% endblock %}

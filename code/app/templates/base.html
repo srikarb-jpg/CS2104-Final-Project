@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>HokieStudy</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<div class="header">
+  <a href="/dashboard"><strong>HokieStudy</strong></a>
+  {% if session.uid %}
+  <nav>
+    <a href="/courses">Courses</a>
+    <a href="/availability">Availability</a>
+    <a href="/matches">Find Partners</a>
+    <a href="/requests">Requests</a>
+    <a href="/logout">Logout</a>
+  </nav>
+  {% endif %}
+</div>
+<div class="page">
+  {% with msgs = get_flashed_messages() %}{% if msgs %}{% for m in msgs %}<div class="ok">{{ m }}</div>{% endfor %}{% endif %}{% endwith %}
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

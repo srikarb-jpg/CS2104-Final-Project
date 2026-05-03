@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>My Availability</h2>
+<p class="gray" style="margin-bottom:14px">Click cells to mark when you're free. <span style="color:#861F41;font-weight:bold">■</span> = available.</p>
+<div class="card">
+  <form method="POST" id="f">
+    <div style="overflow-x:auto">
+      <table class="avail">
+        <tr><th>Time</th>{% for d in days %}<th>{{ d[:3] }}</th>{% endfor %}</tr>
+        {% for i in range(times|length) %}
+        <tr>
+          <td>{{ labels[i] }}</td>
+          {% for d in days %}{% set k = d+'-'+times[i] %}
+          <td class="cell{% if k in selected %} on{% endif %}" data-k="{{ k }}" onclick="tog(this)"></td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div id="hi"></div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button>Save</button>
+      <button type="button" onclick="clearAll()" style="background:#ccc;color:#333">Clear All</button>
+      <a href="/availability/export" style="padding:8px 16px;background:#E5751F;color:#fff;border-radius:4px;text-decoration:none;font-size:14px">Export to iCalendar</a>
+    </div>
+  </form>
+</div>
+<script>
+function tog(td){td.classList.toggle('on');sync()}
+function clearAll(){document.querySelectorAll('.cell.on').forEach(t=>t.classList.remove('on'));sync()}
+function sync(){var d=document.getElementById('hi');d.innerHTML='';document.querySelectorAll('.cell.on').forEach(t=>{var i=document.createElement('input');i.type='hidden';i.name='slots';i.value=t.dataset.k;d.appendChild(i)})}
+sync()
+</script>
+{% endblock %}

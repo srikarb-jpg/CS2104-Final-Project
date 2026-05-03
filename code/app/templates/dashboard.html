@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Welcome, {{ name }}!</h2>
+<p class="gray" style="margin-bottom:20px">Virginia Tech Student</p>
+<div class="card-grid">
+  <a href="/courses" class="card"><h3>My Courses</h3><p>Add your classes to find study partners</p></a>
+  <a href="/availability" class="card"><h3>Availability</h3><p>Set when you're free to study each week</p></a>
+  <a href="/matches" class="card"><h3>Find Partners</h3><p>See students who share your courses</p></a>
+  <a href="/requests" class="card">
+    <h3>Requests {% if pending > 0 %}<span class="badge">{{ pending }}</span>{% endif %}</h3>
+    <p>View and respond to study partner requests</p>
+  </a>
+</div>
+{% endblock %}

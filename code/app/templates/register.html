@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="box">
+  <h2>Create Account</h2>
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+  <form method="POST">
+    <input name="name" placeholder="Full Name" required>
+    <input name="email" type="email" placeholder="VT Email" required>
+    <input name="password" type="password" placeholder="Password" required>
+    <select name="year">
+      <option value="">Year (optional)</option>
+      <option>Freshman</option><option>Sophomore</option><option>Junior</option><option>Senior</option>
+    </select>
+    <button>Register</button>
+  </form>
+  <p><a href="/login">Already have an account?</a></p>
+</div>
+{% endblock %}
